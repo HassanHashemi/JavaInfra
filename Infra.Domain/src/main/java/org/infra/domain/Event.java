@@ -10,7 +10,7 @@ public class Event {
     private Object eventMetaData;
 
     public String getEventName() {
-        if (this.eventName == null || this.eventName.equals("")) {
+        if (this.eventName == null || this.eventName.isEmpty()) {
             this.eventName = this.getClass().getName();
         }
 
@@ -18,7 +18,7 @@ public class Event {
     }
 
     public void setEventName(String value) {
-        if (value == null || value.equals(""))
+        if (value == null || value.isEmpty())
             throw new IllegalArgumentException("value can not be null");
 
         this.eventName = value;

@@ -73,8 +73,8 @@ public class Guard {
         }
     }
 
-    public static void notEmpty(@org.jetbrains.annotations.NotNull String source, String name) {
-        if (source.equals("")) {
+    public static void notEmpty(String source, String name) {
+        if (source == null || source.isEmpty()) {
             throw new IllegalArgumentException(MessageFormat.format("{0} can not be empty", name));
         }
     }

@@ -6,7 +6,8 @@ public class DomainEvent extends Event {
     protected DomainEvent() {
     }
 
+    public UUID rootId;
     protected DomainEvent(UUID aggregateRootId) {
-        var a= UUID.ZERO
+        this.rootId = aggregateRootId;
     }
 }
