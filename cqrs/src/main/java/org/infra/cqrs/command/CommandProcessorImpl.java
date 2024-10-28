@@ -1,6 +1,5 @@
 package org.infra.cqrs.command;
 
-import org.infra.cqrs.Result;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
