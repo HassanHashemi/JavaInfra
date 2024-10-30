@@ -1,6 +1,5 @@
 package org.infra.cqrs.query;
 
-public interface Query {
+public interface Query<TResult> {
 
 }
-

@@ -14,6 +14,7 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 public class TestDecorator implements QueryHandlerDecorator {
     private final QueryHandler innerHandler;
 
+
     public TestDecorator(QueryHandler<TestQuery, ?> innerHandler) {
         this.innerHandler = innerHandler;
     }

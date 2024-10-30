@@ -5,6 +5,10 @@ import org.infra.cqrs.query.QueryProcessor;
 import org.infra.demo.samplecommand.SampleCommand;
 import org.infra.demo.samplequery.TestQuery;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -20,6 +24,7 @@ public class TestRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         var result = this.queryProcessor.execute(new TestQuery());
+
         System.out.println(result);
 //        var commandResult = this.commandProcessor.execute(new SampleCommand());
 //

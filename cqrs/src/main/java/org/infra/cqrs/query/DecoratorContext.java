@@ -3,11 +3,11 @@ package org.infra.cqrs.query;
 public class DecoratorContext {
     public boolean moveNext = true;
 
-    public boolean getMoveNext() {
+    public boolean moveNext() {
         return this.moveNext;
     }
 
-    public void setMoveNext(boolean value) {
-        this.moveNext = value;
+    public void stopPipeline() {
+        this.moveNext = false;
     }
 }

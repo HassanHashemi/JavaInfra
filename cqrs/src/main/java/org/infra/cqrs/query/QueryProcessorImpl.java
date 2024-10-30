@@ -24,16 +24,16 @@ public class QueryProcessorImpl implements QueryProcessor {
     }
 
     @Override
-    public <TQuery extends Query, TResult> TResult execute(TQuery query) {
+    public <TQuery extends Query<TResult>, TResult> TResult execute(TQuery query) {
         this.init();
 
         var handlerClass = handlers.get(query.getClass());
         var handler = (QueryHandler<TQuery, TResult>) this.context.getBean(handlerClass);
 
-        return executePipeline(query, handler);
+        return executePipeline2(query, handler);
     }
 
-    private <TQuery extends Query, TResult> TResult executePipeline(TQuery query, QueryHandler<TQuery, TResult> handler) {
+    private <TResult, TQuery extends Query<TResult>> TResult executePipeline2(TQuery query, QueryHandler<TQuery,TResult> handler) {
         var decorators = new ArrayList<QueryHandlerDecorator>();
 
         for (var name : this.context.getBeanNamesForType(QueryHandlerDecorator.class)) {
@@ -51,10 +51,11 @@ public class QueryProcessorImpl implements QueryProcessor {
 
         TResult result = null;
 
-        while (!functions.isEmpty() && decoratorContext.getMoveNext())
+        while (!functions.isEmpty() && decoratorContext.moveNext())
             result = functions.poll().get();
 
         return result;
+
     }
 
     private void init() {
