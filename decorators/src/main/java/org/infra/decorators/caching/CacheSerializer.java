@@ -1,4 +1,4 @@
-package org.infra.cqrs.query;
+package org.infra.decorators.caching;
 
 public interface CacheSerializer {
     String serialize(Object object);

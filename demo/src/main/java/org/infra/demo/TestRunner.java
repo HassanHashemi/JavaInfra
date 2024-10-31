@@ -25,7 +25,7 @@ public class TestRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         var result = this.queryProcessor.execute(new TestQuery());
 
-        System.out.println(result);
+        System.out.println(result.getName());
 //        var commandResult = this.commandProcessor.execute(new SampleCommand());
 //
 //        System.out.println(commandResult);

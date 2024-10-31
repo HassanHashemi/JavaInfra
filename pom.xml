@@ -12,6 +12,7 @@
         <module>domain</module>
         <module>validation</module>
         <module>cqrs</module>
+        <module>decorators</module>
     </modules>
 
     <properties>
@@ -19,6 +20,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.version>6.1.13</spring.version>
+        <slf4j.version>2.0.16</slf4j.version>
     </properties>
 
 </project>

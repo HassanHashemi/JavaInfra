@@ -1,24 +1,28 @@
-package org.infra.demo;
+package org.infra.decorators.caching;
 
-import jakarta.annotation.Resource;
-import org.infra.cqrs.query.*;
+import org.infra.cqrs.query.DecoratorContext;
+import org.infra.cqrs.query.Query;
+import org.infra.cqrs.query.QueryHandler;
+import org.infra.cqrs.query.QueryHandlerDecorator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.GenericTypeResolver;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
-import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
-
 @Component
-@Scope(SCOPE_PROTOTYPE)
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 public class CacheDecorator<TQuery extends Query<TResult>, TResult> implements QueryHandlerDecorator<TQuery, TResult> {
+    private final Logger logger = LoggerFactory.getLogger(CacheDecorator.class);
     private final QueryHandler<Query<TResult>, TResult> innerHandler;
-    @Resource(name = "redisTemplate")
-    private ValueOperations<String, String> keyValue;
 
     @Autowired
     private CacheSerializer serializer;
+
+    @Autowired
+    private DistributedCache cache;
 
     public CacheDecorator(QueryHandler<Query<TResult>, TResult> innerHandler) {
         this.innerHandler = innerHandler;
@@ -34,13 +38,16 @@ public class CacheDecorator<TQuery extends Query<TResult>, TResult> implements Q
             return this.innerHandler.handle(query);
         }
 
-        var cacheValue = keyValue.get(cacheableQuery.getKey());
+        context.stopPipeline();
+        var cacheValue = cache.get(cacheableQuery.getKey());
         if (cacheValue == null) {
-            var freshResult = this.innerHandler.handle(cacheableQuery);
-            keyValue.set(cacheableQuery.getKey(), serializeResult(freshResult));
+            logger.info("cache key {} got missed", cacheableQuery.getKey());
+            var freshResult = this.innerHandler.handle((Query<TResult>) cacheableQuery);
+            cache.set(cacheableQuery.getKey(), serializeResult(freshResult), cacheableQuery.slidingExpiration());
 
-            return (TResult)freshResult;
+            return freshResult;
         } else {
+            logger.info("cache key {} got hit", cacheableQuery.getKey());
             var resultClass = GenericTypeResolver.resolveTypeArguments(cacheableQuery.getClass(), Query.class)[0];
             return this.serializer.deserialize(cacheValue, (Class<TResult>) resultClass);
         }

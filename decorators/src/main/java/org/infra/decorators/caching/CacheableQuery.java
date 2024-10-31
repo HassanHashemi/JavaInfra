@@ -1,4 +1,6 @@
-package org.infra.cqrs.query;
+package org.infra.decorators.caching;
+
+import org.infra.cqrs.query.Query;
 
 import java.time.Duration;
 import java.time.LocalTime;

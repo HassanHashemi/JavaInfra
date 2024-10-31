@@ -1,12 +1,11 @@
 package org.infra.demo.samplequery;
 
-import org.infra.cqrs.query.CacheableQuery;
-
+import org.infra.decorators.caching.CacheableQuery;
 
 public class TestQuery implements CacheableQuery<TestQueryResult> {
     @Override
     public String getKey() {
-        return "123456";
+        return "1234567";
     }
 }
 
