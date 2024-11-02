@@ -1,15 +1,14 @@
-package org.infra.demo;
+package org.infra.decorators.caching;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.infra.decorators.caching.CacheSerializer;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JsonSerializer implements CacheSerializer {
+public class DefaultJsonSerializer implements CacheSerializer {
     private final ObjectMapper serializer;
 
-    public JsonSerializer() {
+    public DefaultJsonSerializer() {
         this.serializer = new ObjectMapper();
     }
 

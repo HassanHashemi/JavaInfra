@@ -1,5 +1,5 @@
 package org.infra.cqrs.command;
 
-public interface Command {
+public interface Command<TResult> {
 
 }

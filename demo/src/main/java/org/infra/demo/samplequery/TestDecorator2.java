@@ -1,6 +1,6 @@
 //package org.infra.demo.samplequery;
 //
-//import org.infra.cqrs.query.DecoratorContext;
+//import org.infra.cqrs.context.HandlerContext;
 //import org.infra.cqrs.query.Query;
 //import org.infra.cqrs.query.QueryHandler;
 //import org.infra.cqrs.query.QueryHandlerDecorator;
@@ -21,7 +21,7 @@
 //    }
 //
 //    @Override
-//    public Object handle(Query query, DecoratorContext context) {
+//    public Object handle(Query query, HandlerContext context) {
 //        System.out.println("2");
 //        return this.innerHandler.handle(query);
 //    }

@@ -1,12 +1,17 @@
 package org.infra.cqrs.command;
 
+import org.infra.cqrs.context.ContextFactory;
+import org.infra.cqrs.context.HandlerContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.function.Supplier;
 
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
@@ -14,22 +19,50 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 @Scope(SCOPE_PROTOTYPE)
 public class CommandProcessorImpl implements CommandProcessor {
     private final ApplicationContext context;
+    private final ContextFactory contextFactory;
     private boolean initialized = false;
-    private static final HashMap<Class<?>, Class<? extends CommandHandler<?,?>>> _handlers = new HashMap<>();
+    private static final HashMap<Class<?>, Class<? extends CommandHandler<?, ?>>> handlers = new HashMap<>();
     private static final Object lock = new Object();
 
-    public CommandProcessorImpl(ApplicationContext context) {
+    public CommandProcessorImpl(ApplicationContext context, ContextFactory contextFactory) {
         this.context = context;
+        this.contextFactory = contextFactory;
     }
 
     @Override
-    public <TCommand extends Command, TResult> TResult execute(TCommand command) {
+    public <TCommand extends Command<TResult>, TResult> TResult execute(TCommand command) {
         this.init();
 
-        var handlerClass = _handlers.get(command.getClass());
-        var handler = (CommandHandler<TCommand, TResult>)this.context.getBean(handlerClass);
+        var handlerClass = handlers.get(command.getClass());
+        var handler = (CommandHandler<TCommand, TResult>) this.context.getBean(handlerClass);
 
-        return handler.handle(command);
+        return executePipeline(command, handler);
+    }
+
+    private <TResult, TCommand extends Command<TResult>> TResult executePipeline(TCommand command, CommandHandler<TCommand, TResult> handler) {
+        var decorators = new ArrayList<CommandHandlerDecorator>();
+
+        for (var name : this.context.getBeanNamesForType(CommandHandlerDecorator.class)) {
+            decorators.add((CommandHandlerDecorator) context.getBean(name, handler));
+        }
+
+        var handlerContext = this.contextFactory.get();
+        if (decorators.isEmpty())
+            return handler.handle(command, handlerContext);
+
+        var functions = new LinkedList<Supplier<TResult>>();
+
+        decorators
+                .stream()
+                .sorted(new CommandHandlerDecorator.Comparator())
+                .forEach(c -> functions.add(() -> (TResult) c.handle(command, handlerContext)));
+
+        TResult result = null;
+
+        while (!functions.isEmpty() && handlerContext.moveNext())
+            result = functions.poll().get();
+
+        return result;
     }
 
     private void init() {
@@ -45,7 +78,7 @@ public class CommandProcessorImpl implements CommandProcessor {
                         if (args == null)
                             throw new RuntimeException(MessageFormat.format("Invalid CommandHandler {0}", handler.getClass().getName()));
 
-                        _handlers.put(args[0], (Class<? extends CommandHandler<?, ?>>) handler.getClass());
+                        handlers.put(args[0], (Class<? extends CommandHandler<?, ?>>) handler.getClass());
                     });
 
             this.initialized = true;

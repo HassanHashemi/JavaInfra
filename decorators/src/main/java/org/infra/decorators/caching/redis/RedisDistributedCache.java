@@ -1,11 +1,8 @@
 package org.infra.decorators.caching.redis;
 
-import jakarta.annotation.Resource;
 import org.infra.decorators.caching.DistributedCache;
-import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Service;
 

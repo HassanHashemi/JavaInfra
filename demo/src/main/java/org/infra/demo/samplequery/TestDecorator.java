@@ -1,6 +1,6 @@
 package org.infra.demo.samplequery;
 
-import org.infra.cqrs.query.DecoratorContext;
+import org.infra.cqrs.context.HandlerContext;
 import org.infra.cqrs.query.Query;
 import org.infra.cqrs.query.QueryHandler;
 import org.infra.cqrs.query.QueryHandlerDecorator;
@@ -21,10 +21,10 @@ public class TestDecorator implements QueryHandlerDecorator {
 
 
     @Override
-    public Object handle(Query query, DecoratorContext context) {
+    public Object handle(Query query, HandlerContext context) {
         System.out.println("1");
 
-        return this.innerHandler.handle(query);
+        return this.innerHandler.handle(query, context);
     }
 
     @Override

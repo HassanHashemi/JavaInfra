@@ -1,6 +1,6 @@
 package org.infra.decorators.caching;
 
-import org.infra.cqrs.query.DecoratorContext;
+import org.infra.cqrs.context.HandlerContext;
 import org.infra.cqrs.query.Query;
 import org.infra.cqrs.query.QueryHandler;
 import org.infra.cqrs.query.QueryHandlerDecorator;
@@ -33,16 +33,16 @@ public class CacheDecorator<TQuery extends Query<TResult>, TResult> implements Q
     }
 
     @Override
-    public TResult handle(TQuery query, DecoratorContext context) {
+    public TResult handle(TQuery query, HandlerContext context) {
         if (!(query instanceof CacheableQuery cacheableQuery)) {
-            return this.innerHandler.handle(query);
+            return this.innerHandler.handle(query, context);
         }
 
         context.stopPipeline();
         var cacheValue = cache.get(cacheableQuery.getKey());
         if (cacheValue == null) {
             logger.info("cache key {} got missed", cacheableQuery.getKey());
-            var freshResult = this.innerHandler.handle((Query<TResult>) cacheableQuery);
+            var freshResult = this.innerHandler.handle((Query<TResult>) cacheableQuery, context);
             cache.set(cacheableQuery.getKey(), serializeResult(freshResult), cacheableQuery.slidingExpiration());
 
             return freshResult;

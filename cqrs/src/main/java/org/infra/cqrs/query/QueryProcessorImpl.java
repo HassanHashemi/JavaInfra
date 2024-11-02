@@ -1,5 +1,6 @@
 package org.infra.cqrs.query;
 
+import org.infra.cqrs.context.ContextFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.GenericTypeResolver;
@@ -15,47 +16,47 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 @Scope(SCOPE_PROTOTYPE)
 public class QueryProcessorImpl implements QueryProcessor {
     private final ApplicationContext context;
+    private final ContextFactory contextFactory;
     private static final Map<Class<?>, Class<? extends QueryHandler<?, ?>>> handlers = new HashMap<>();
     private static final Object lockObject = new Object();
     private boolean initialized = false;
 
-    public QueryProcessorImpl(ApplicationContext context) {
+    public QueryProcessorImpl(ApplicationContext context, ContextFactory contextFactory) {
         this.context = context;
+        this.contextFactory = contextFactory;
     }
 
     @Override
     public <TQuery extends Query<TResult>, TResult> TResult execute(TQuery query) {
         this.init();
-
         var handlerClass = handlers.get(query.getClass());
         var handler = (QueryHandler<TQuery, TResult>) this.context.getBean(handlerClass);
 
-        return executePipeline2(query, handler);
+        return executePipeline(query, handler);
     }
 
-    private <TResult, TQuery extends Query<TResult>> TResult executePipeline2(TQuery query, QueryHandler<TQuery,TResult> handler) {
-        var decorators = new ArrayList<QueryHandlerDecorator>();
+    private <TResult, TQuery extends Query<TResult>> TResult executePipeline(TQuery query, QueryHandler<TQuery, TResult> handler) {
+        var decorators = Arrays.stream(this.context.getBeanNamesForType(QueryHandlerDecorator.class))
+                .map(name -> (QueryHandlerDecorator)context.getBean(name, handler))
+                .toList();
 
-        for (var name : this.context.getBeanNamesForType(QueryHandlerDecorator.class)) {
-            decorators.add((QueryHandlerDecorator) context.getBean(name, handler));
-        }
+        var handlerContext = this.contextFactory.get();
+
+        if (decorators.isEmpty())
+            return handler.handle(query, handlerContext);
 
         var functions = new LinkedList<Supplier<TResult>>();
-        var decoratorContext = new DecoratorContext();
-        decorators.stream().sorted((o1, o2) -> {
-                    if (o1.priority() < o2.priority())  return -1;
-                    else if (o1.priority() == o2.priority()) return 0;
-                    else return Integer.MAX_VALUE;
-                })
-                .forEach(c -> functions.add(() -> (TResult) c.handle(query, decoratorContext)));
+
+        decorators.stream()
+                .sorted(new QueryHandlerDecorator.Comparator())
+                .forEach(c -> functions.add(() -> (TResult) c.handle(query, handlerContext)));
 
         TResult result = null;
 
-        while (!functions.isEmpty() && decoratorContext.moveNext())
+        while (!functions.isEmpty() && handlerContext.moveNext())
             result = functions.poll().get();
 
         return result;
-
     }
 
     private void init() {

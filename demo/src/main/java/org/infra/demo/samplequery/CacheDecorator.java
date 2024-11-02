@@ -1,7 +1,7 @@
 //package org.infra.demo.samplequery;
 //
 //import jakarta.annotation.Resource;
-//import org.infra.cqrs.query.DecoratorContext;
+//import org.infra.cqrs.context.HandlerContext;
 //import org.infra.cqrs.query.Query;
 //import org.infra.cqrs.query.QueryHandler;
 //import org.infra.cqrs.query.QueryHandlerDecorator;
@@ -35,7 +35,7 @@
 //    }
 //
 //    @Override
-//    public TResult handle(TQuery query, DecoratorContext context) {
+//    public TResult handle(TQuery query, HandlerContext context) {
 //        if (!(query instanceof CacheableQuery cacheableQuery)) {
 //            return this.innerHandler.handle(query);
 //        }
