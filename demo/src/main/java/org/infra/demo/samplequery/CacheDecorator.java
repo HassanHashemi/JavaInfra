@@ -45,7 +45,7 @@
 //        if (cacheValue == null) {
 //            logger.info("cache key {} got missed", cacheableQuery.getKey());
 //            var freshResult = this.innerHandler.handle((Query<TResult>) cacheableQuery);
-//            cache.set(cacheableQuery.getKey(), serializeResult(freshResult), cacheableQuery.slidingExpiration());
+//            cache.set(cacheableQuery.getKey(), serializeResult(freshResult), cacheableQuery.timeOut());
 //
 //            return freshResult;
 //        } else {

@@ -28,10 +28,6 @@ public class CacheDecorator<TQuery extends Query<TResult>, TResult> implements Q
         this.innerHandler = innerHandler;
     }
 
-    private String serializeResult(Object freshResult) {
-        return this.serializer.serialize(freshResult);
-    }
-
     @Override
     public TResult handle(TQuery query, HandlerContext context) {
         if (!(query instanceof CacheableQuery cacheableQuery)) {
@@ -42,13 +38,18 @@ public class CacheDecorator<TQuery extends Query<TResult>, TResult> implements Q
         var cacheValue = cache.get(cacheableQuery.getKey());
         if (cacheValue == null) {
             logger.info("cache key {} got missed", cacheableQuery.getKey());
+
             var freshResult = this.innerHandler.handle((Query<TResult>) cacheableQuery, context);
-            cache.set(cacheableQuery.getKey(), serializeResult(freshResult), cacheableQuery.slidingExpiration());
+            cache.set(
+                    cacheableQuery.getKey(),
+                    this.serializer.serialize(freshResult),
+                    cacheableQuery.timeOut());
 
             return freshResult;
         } else {
             logger.info("cache key {} got hit", cacheableQuery.getKey());
             var resultClass = GenericTypeResolver.resolveTypeArguments(cacheableQuery.getClass(), Query.class)[0];
+
             return this.serializer.deserialize(cacheValue, (Class<TResult>) resultClass);
         }
     }

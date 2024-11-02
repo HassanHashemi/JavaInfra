@@ -23,12 +23,12 @@ public class TestRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        var result = this.queryProcessor.execute(new TestQuery());
-//
-//        System.out.println(result.getName());
-        var commandResult = this.commandProcessor.execute(new SampleCommand());
+        var result = this.queryProcessor.execute(new TestQuery());
 
-        System.out.println(commandResult);
+        System.out.println(result.getName());
+//        var commandResult = this.commandProcessor.execute(new SampleCommand());
+//
+//        System.out.println(commandResult);
     }
 }
 
