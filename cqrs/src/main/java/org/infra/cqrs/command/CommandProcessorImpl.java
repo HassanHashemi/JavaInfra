@@ -1,14 +1,12 @@
 package org.infra.cqrs.command;
 
 import org.infra.cqrs.context.ContextFactory;
-import org.infra.cqrs.context.HandlerContext;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.GenericTypeResolver;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.function.Supplier;
@@ -40,11 +38,12 @@ public class CommandProcessorImpl implements CommandProcessor {
     }
 
     private <TResult, TCommand extends Command<TResult>> TResult executePipeline(TCommand command, CommandHandler<TCommand, TResult> handler) {
-        var decorators = new ArrayList<CommandHandlerDecorator>();
-
-        for (var name : this.context.getBeanNamesForType(CommandHandlerDecorator.class)) {
-            decorators.add((CommandHandlerDecorator) context.getBean(name, handler));
-        }
+        var decorators = context
+                .getBeansOfType(CommandHandlerDecorator.class)
+                .values()
+                .stream()
+                .sorted(new CommandHandlerDecorator.Comparator())
+                .toList();
 
         var handlerContext = this.contextFactory.get();
         if (decorators.isEmpty())
@@ -52,10 +51,7 @@ public class CommandProcessorImpl implements CommandProcessor {
 
         var functions = new LinkedList<Supplier<TResult>>();
 
-        decorators
-                .stream()
-                .sorted(new CommandHandlerDecorator.Comparator())
-                .forEach(c -> functions.add(() -> (TResult) c.handle(command, handlerContext)));
+        decorators.forEach(c -> functions.add(() -> (TResult) c.handle(handler, command, handlerContext)));
 
         TResult result = null;
 
@@ -70,6 +66,9 @@ public class CommandProcessorImpl implements CommandProcessor {
             return;
 
         synchronized (lock) {
+            if (initialized)
+                return;
+
             this.context.getBeansOfType(CommandHandler.class)
                     .values()
                     .forEach((handler) -> {
@@ -85,4 +84,3 @@ public class CommandProcessorImpl implements CommandProcessor {
         }
     }
 }
-

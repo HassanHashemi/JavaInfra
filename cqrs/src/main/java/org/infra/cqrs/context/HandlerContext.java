@@ -37,9 +37,8 @@ public final class HandlerContext {
             throw new IllegalArgumentException("invalid key");
 
         var value = this.headers.get(key);
-        if (!cls.isInstance(value)) {
+        if (!cls.isInstance(value))
             throw new ClassCastException("incompatible value to <T>");
-        }
 
         return cls.cast(value);
     }

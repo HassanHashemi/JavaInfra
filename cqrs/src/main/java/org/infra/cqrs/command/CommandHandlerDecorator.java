@@ -4,7 +4,7 @@ import org.infra.cqrs.context.HandlerContext;
 import org.infra.cqrs.query.QueryHandlerDecorator;
 
 public interface CommandHandlerDecorator<TCommand extends Command<TResult>, TResult> {
-    TResult handle(TCommand command, HandlerContext context);
+    TResult handle(CommandHandler<TCommand, TResult> innerHandler, TCommand command, HandlerContext context);
     default int priority() { return 0; }
 
     class Comparator implements java.util.Comparator<CommandHandlerDecorator> {

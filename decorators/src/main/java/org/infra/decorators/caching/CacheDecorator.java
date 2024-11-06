@@ -1,5 +1,8 @@
 package org.infra.decorators.caching;
 
+import org.infra.cqrs.command.Command;
+import org.infra.cqrs.command.CommandHandler;
+import org.infra.cqrs.command.CommandHandlerDecorator;
 import org.infra.cqrs.context.HandlerContext;
 import org.infra.cqrs.query.Query;
 import org.infra.cqrs.query.QueryHandler;
