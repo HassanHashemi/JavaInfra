@@ -3,7 +3,7 @@ package org.infra.cqrs.query;
 import org.infra.cqrs.context.HandlerContext;
 
 public interface QueryHandlerDecorator<TQuery extends Query<TResult>, TResult> {
-    TResult handle(TQuery query, HandlerContext context);
+    TResult handle(QueryHandler<TQuery, TResult> handler, TQuery query, HandlerContext context);
     default int priority() { return 0; }
 
     class Comparator implements java.util.Comparator<QueryHandlerDecorator> {

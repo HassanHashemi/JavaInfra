@@ -11,26 +11,11 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
-public class TestDecorator implements QueryHandlerDecorator {
-    private final QueryHandler innerHandler;
-
-
-    public TestDecorator(QueryHandler<TestQuery, ?> innerHandler) {
-        this.innerHandler = innerHandler;
-    }
-
-
+public class TestDecorator<TQuery extends Query<TResult>, TResult> implements QueryHandlerDecorator<TQuery, TResult> {
     @Override
-    public Object handle(Query query, HandlerContext context) {
+    public TResult handle(QueryHandler<TQuery, TResult> innerHandler, TQuery query, HandlerContext context) {
         System.out.println("1");
 
-        return this.innerHandler.handle(query, context);
-    }
-
-    @Override
-    public int priority() {
-        return 0;
+        return innerHandler.handle(query, context);
     }
 }
-
-

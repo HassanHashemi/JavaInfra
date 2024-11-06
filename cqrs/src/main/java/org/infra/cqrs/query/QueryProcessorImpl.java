@@ -36,10 +36,9 @@ public class QueryProcessorImpl implements QueryProcessor {
     }
 
     private <TResult, TQuery extends Query<TResult>> TResult executePipeline(TQuery query, QueryHandler<TQuery, TResult> handler) {
-        var decorators = Arrays.stream(this.context.getBeanNamesForType(QueryHandlerDecorator.class))
-                .map(name -> (QueryHandlerDecorator)context.getBean(name, handler))
-                .toList();
-
+        var decorators = this.context
+                .getBeansOfType(QueryHandlerDecorator.class)
+                .values();
         var handlerContext = this.contextFactory.get();
 
         if (decorators.isEmpty())
@@ -49,7 +48,7 @@ public class QueryProcessorImpl implements QueryProcessor {
 
         decorators.stream()
                 .sorted(new QueryHandlerDecorator.Comparator())
-                .forEach(c -> functions.add(() -> (TResult) c.handle(query, handlerContext)));
+                .forEach(c -> functions.add(() -> (TResult) c.handle(handler, query, handlerContext)));
 
         TResult result = null;
 
