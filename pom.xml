@@ -13,6 +13,7 @@
         <module>validation</module>
         <module>cqrs</module>
         <module>decorators</module>
+        <module>base</module>
     </modules>
 
     <properties>
